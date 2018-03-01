@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="">
+    <meta name="description" content="">
+
+    <title>
+      
+        Immutable Containers Using Python Metaclasses
+      
+    </title>
+
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-52140647-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+
+    <link href='/static/css/main.css' rel="stylesheet">
+    <link href='/static/css/grids-units-min.css' rel="stylesheet">
+    <link href='/static/css/grids-responsive-min.css' rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="pure-g">
+      <div class="site-nav pure-u-1 pure-u-lg-5-24">
+        <header>
+            <a class="site-title" href="/">
+              <span class="first-name">Jonathan</span> Como
+            </a>
+
+            <div class="contact">
+              <ul>
+                <li>
+                  <a href='https://github.com/jcomo'>
+                    github
+                  </a>
+                </li>
+                <li>
+                  <a href='https://twitter.com/jonathancomo'>
+                    twitter
+                  </a>
+                </li>
+                <li>
+                  <a href='mailto:jonathan.como@gmail.com'>
+                    email
+                  </a>
+                </li>
+                <li>
+                  <a href='/about'>
+                    about
+                  </a>
+                </li>
+              </ul>
+            </div>
+        </header>
+      </div>
+      <div class="pure-u-1 pure-u-lg-1-24"></div>
+      <div class="pure-u-1 pure-u-lg-17-24">
+        
+<div class="post">
+  <header class="post-header">
+    <h1>Immutable Containers Using Python Metaclasses</h1>
+    <p class="meta">
+      January  3, 2015
+      
+
+      
+    </p>
+  </header>
+
+  <article class="post-content">
+  	<p>I have found python to be one of the easiest languages to pick up, and I think there are many people out there who could corroborate that. That alone is a big reason that it is used for teaching. However, under the hood there are a lot of features in the language where the implementation details can be downright scary to the newcomer and even to the moderately experienced pythonista: metaclasses, dunder methods (eg. <code>__init__</code>), and perhaps even decorators depending on the complexity of the function wrapper.</p>
+
+<p>At the moment I put myself into that moderately experienced bucket. I&rsquo;m pretty comfortable overall but I haven&rsquo;t had a chance to explore the more advanced areas of the language. Metaclasses are the first topic I wanted to dive into.</p>
+
+<h2>Meta what?</h2>
+
+<p>By definition, metaclasses are classes that describe and instantiate other classes. Cue the head exploding gif. It sounds pretty convoluted but in reality it&rsquo;s not. In python everything is an object. When you write a class definition, you are essentially defining the properties that each instance of the class will have. Similarly, with metaclasses you are defining the properties that each <em>class</em> will have.</p>
+
+<h2>Metaclass uses</h2>
+
+<p>Metaclasses are commonly used as class factories and as ways to add functionality to a class itself. Frameworks make use of this (eg. Django) and some libraries also use them. One example of a library is Mongokit.</p>
+
+<p>In Django, metaclasses are used to add information to the user created classes such as permissions and the corresponding database table name. Mongokit uses metaclasses to allow for validation on custom types.</p>
+
+<h2>How do they work?</h2>
+
+<p>The definition of a class will typically be something like this:</p>
+
+<pre><code class="language-python">class Container(object):
+    name = 'default'
+</code></pre>
+
+<p>where <code>object</code> is the superclass. We can create basic objects using the <code>object()</code> callable, so can we do something to dynamically create basic classes? You bet. This is where the <code>type</code> function comes into play. It either takes one argument or three arguments, but we care about the three argument version (docs <a href="https://docs.python.org/2/library/functions.html#type">here</a>).</p>
+
+<p>We can create the same Container class dynamically with a call to the <code>type</code> builtin.</p>
+
+<pre><code class="language-python">Container = type('Container', (object,), dict(name='default'))
+</code></pre>
+
+<p>The first argument is the name of the class as a string. The second is a tuple containing all base classes (evaluated left to right). Finally, the third argument is dictionary of the properties to set on the class. In this example, the sole item in the dictionary is a static string but by passing in functions, you can provide methods to each instance of the class that will be created. After all, calling <code>obj.method()</code> is nearly equivalent to <code>obj['method']()</code> because of the way python implements it objects, so passing a dictionary makes sense.</p>
+
+<p>Since everything is an object, by subclassing <code>type</code> we&rsquo;ve created a metaclass. To use a metaclass, you can either specify it using the <code>__metaclass__</code> property of a class</p>
+
+<pre><code class="language-python">class Container(object):
+    __metaclass__ = ContainerMeta
+
+    name = 'default'
+</code></pre>
+
+<p><em>or</em> you can use it to create classes dynamically (and override the initializers in the metaclass in the same way you would for an object).</p>
+
+<pre><code class="language-python">Container = ContainerMeta('Container', (object,), dict(name='default'))
+</code></pre>
+
+<h2>Creating an immutable container library</h2>
+
+<p>The easiest way I learn is by example, and with something like metaclasses, it really makes sense to write code that uses them. I wasn&rsquo;t getting much just by reading about them.</p>
+
+<p>I settled on writing an immutable container library using metaclasses. I will walk through a watered-down version to demonstrate the use of metaclasses but the full library can be found on <a href="https://github.com/jcomo/immut">Github</a>.</p>
+
+<p>We&rsquo;re going for a simple API that looks like this <code>ImmutableContainer(container_name, *attributes)</code> where <code>container_name</code> is a string that would be the class name and each <code>attribute</code> is a string that will end up being a read-only property. The function call will return a <strong>class</strong> where the specified attributes can be instantiated but never modified.</p>
+
+<pre><code class="language-python">RequestModel = ImmutableContainer('RequestModel', 'version', 'user')
+
+u = User('Jonathan')
+request = RequestModel(user=u, version=2)
+
+request.version  # returns 2
+request.version = 3  # we want this to raise an AttributeError
+</code></pre>
+
+<p>This looks like a job for metaclasses! We can define an <code>ImmutableContainerType</code> that will create container classes and replace the <code>setattr</code> method with one that will raise exceptions for the attributes that should be immutable.</p>
+
+<pre><code class="language-python">class ImmutableContainerType(type):
+    def __init__(cls, name, bases, dct):
+        super(ImmutableContainerType, cls).__init__(name, bases, dct)
+        attributes = dct.get('attributes', [])
+        cls.__setattr__ = cls.__class__.get_setattr(attributes)
+
+    @classmethod
+    def get_setattr(mcs, attributes):
+        def setter(self, name, value):
+            if name in attributes:
+                raise AttributeError(&quot;Property {} is immutable&quot;.format(name))
+            super(self.__class__, self).__setattr__(name, value)
+        return setter
+</code></pre>
+
+<p>Since this metaclass subclasses <code>type</code> we can create an instance of it (a class) and the <code>__init__</code> method will be called.</p>
+
+<pre><code class="language-python">RequestModel = ImmutableContainerType('RequestModel', (object,),
+                                       dict(attributes=['version', 'user']))
+</code></pre>
+
+<p>Well, that works. But it doesn&rsquo;t quite fit the API we&rsquo;re looking for. A little wrapper will fix that.</p>
+
+<pre><code class="language-python">def make_container(container_name, *attributes):
+    return ImmutableContainerType(container_name, (object,),
+                                  dict(attributes=attributes))
+
+ImmutableContainer = make_container
+</code></pre>
+
+<p>Much better.</p>
+
+<h2>Concluding thoughts</h2>
+
+<p>Could I have made the immutable container library without using metaclasses? Absolutely. The API may have ended up looking a bit different but it could definitely be done without using metaclasses.</p>
+
+<p>For most things, using metaclasses will be overkill. While they are extremely powerful, they can make the code harder to reason about. I&rsquo;ve found that the best place to use them are in frameworks but they also tend to pop up in some libraries.</p>
+
+  </article>
+
+</div>
+
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        &copy; 2018 Jonathan Como
+      </p>
+      <p>
+        🍌Site created with
+        <a href="https://github.com/jcomo/banana">
+          banana
+        </a>
+      </p>
+    </footer>
+  </body>
+</html>
+

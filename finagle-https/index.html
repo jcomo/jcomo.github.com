@@ -1,0 +1,188 @@
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="">
+    <meta name="description" content="">
+
+    <title>
+      
+        Making HTTPS requests with Finagle
+      
+    </title>
+
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-52140647-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+
+    <link href='/static/css/main.css' rel="stylesheet">
+    <link href='/static/css/grids-units-min.css' rel="stylesheet">
+    <link href='/static/css/grids-responsive-min.css' rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="pure-g">
+      <div class="site-nav pure-u-1 pure-u-lg-5-24">
+        <header>
+            <a class="site-title" href="/">
+              <span class="first-name">Jonathan</span> Como
+            </a>
+
+            <div class="contact">
+              <ul>
+                <li>
+                  <a href='https://github.com/jcomo'>
+                    github
+                  </a>
+                </li>
+                <li>
+                  <a href='https://twitter.com/jonathancomo'>
+                    twitter
+                  </a>
+                </li>
+                <li>
+                  <a href='mailto:jonathan.como@gmail.com'>
+                    email
+                  </a>
+                </li>
+                <li>
+                  <a href='/about'>
+                    about
+                  </a>
+                </li>
+              </ul>
+            </div>
+        </header>
+      </div>
+      <div class="pure-u-1 pure-u-lg-1-24"></div>
+      <div class="pure-u-1 pure-u-lg-17-24">
+        
+<div class="post">
+  <header class="post-header">
+    <h1>Making HTTPS requests with Finagle</h1>
+    <p class="meta">
+      May 10, 2015
+      
+
+      
+    </p>
+  </header>
+
+  <article class="post-content">
+  	<p>I am currently maintaining a service at my day job that takes arbitrary events
+from mobile games and subsequently validates and processes them so that the
+customers who are sending this data to us can then view it with pretty graphs
+and other metrics via our dashboard. Our customers can then use this data to
+optimize their advertising campaigns and target certain publisher or user groups
+that they believe gives them a better return on investment.</p>
+
+<p>Right now, the service is written in Python (using <a href="http://flask.pocoo.org/">Flask</a>)
+and has been functioning just fine, but we are rapidly expanding this service
+to be able to handle more and more events. Some of those events can require
+heavier processing that blocks the request thread, which is not good. I have
+been experimenting with Scala and <a href="https://twitter.github.io/finagle/">Finagle</a>
+(a high concurrency RPC framework) as we already use this stack for some of our
+more heavily trafficked services.</p>
+
+<p>As I was exploring Finagle, I was running little toy services to make sure that
+it would be relatively easy to port everything over if we decided to go down
+that route. One of the events that we handle is receipt validation for in app
+purchases. For receipts from certain app stores, we need to make an RPC call
+to their servers where the response will have the result of the validation.</p>
+
+<p>While trying to implement a basic HTTP service in Finagle, I stumbled into some
+difficulty when sending requests over HTTPS. Although Finagle is pretty well
+documented in general, I had trouble finding the answer to this issue. Hopefully,
+the following explanation will help others get unstuck with this issue in the
+future.</p>
+
+<h2>Validating Amazon Receipts</h2>
+
+<p>For this example, we&rsquo;re going to take the scenario of validating receipts with
+Amazon&rsquo;s <a href="https://developer.amazon.com/public/apis/earn/in-app-purchasing/docs-v2/verifying-receipts-in-iap-2.0">receipt validation service</a>.
+All of the specs and seemingly random strings shown in the code examples come
+straight from their documentation.</p>
+
+<p>Our API for this service should allow a user to wrap an Amazon receipt inside of
+a request and feed it to our client. The service should look something like this.</p>
+
+<pre><code class="language-scala">class AmazonReceiptValidationClient(dest: String) extends Service[AmazonReceiptRequest, Response] {
+  private val service = Http.newService(dest)
+
+  override def apply(req: AmazonReceiptRequest): Future[Response] = {
+    service(req) map { resp =&gt;
+      if (resp.getStatus == HttpResponseStatus.OK) resp
+      else throw new Exception(&quot;Could not validate Amazon receipt&quot;)
+    }
+  }
+}
+
+val client = new AmazonReceiptValidationClient(&quot;appstore-sdk.amazon.com:443&quot;)
+</code></pre>
+
+<p>This is where I started out and originally ran into some trouble. When calling
+the service, I would get an error that the connection was reset by peer. In other
+words, Amazon had had enough of my HTTP-with-no-TLS BS and refused to
+service my request.</p>
+
+<p>The correct implementation for this is actually quite straightforward after
+seeing it, but the documentation is not very clear. The private definition
+for <code>service</code> would change to the following</p>
+
+<pre><code class="language-scala">private val service = Http.client.withTls(hostname).newService(s&quot;$hostname:443&quot;)
+</code></pre>
+
+<p>And would then be instantiated as</p>
+
+<pre><code class="language-scala">val client = new AmazonReceiptValidationClient(&quot;appstore-sdk.amazon.com&quot;)
+</code></pre>
+
+<p>The <code>withTls</code> method returns a client (or service factory, as Finagle calls them)
+that will use TLS with requests. You can then create a service using this new
+client.</p>
+
+<p>For the sake of completeness, I&rsquo;ve included the definition of <code>AmazonReceipt</code>
+and <code>AmazonReceiptRequest</code> below.</p>
+
+<pre><code>case class AmazonReceipt(id: String, developerSecret: String, userId: String)
+
+case class AmazonReceiptRequest(receipt: AmazonReceipt) extends RequestProxy {
+  override lazy val request = Request(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, servicePath))
+
+  def servicePath =
+    s&quot;/version/1.0/verifyReceiptId/developer/${receipt.developerSecret}/user/${receipt.userId}/receiptId/${receipt.id}&quot;
+}
+</code></pre>
+
+  </article>
+
+</div>
+
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        &copy; 2018 Jonathan Como
+      </p>
+      <p>
+        🍌Site created with
+        <a href="https://github.com/jcomo/banana">
+          banana
+        </a>
+      </p>
+    </footer>
+  </body>
+</html>
+
