@@ -28,31 +28,20 @@ body {
 }
 
 
-@media screen and (min-width: 900px) {
-  body {
-    width: 900px;
-  }
-}
-
 strong::before,
 strong::after {
   content: "*";
 }
 
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.4em;
+}
+
 h1 {
   font-weight: 400;
-}
-
-h2::before {
-  content: "## ";
-}
-
-h3::before {
-  content: "### ";
-}
-
-h4::before {
-  content: "#### ";
 }
 
 h2 {
@@ -61,6 +50,28 @@ h2 {
 
 h3 {
   font-size: 24px;
+}
+
+h4 {
+  font-size: 20px;
+}
+
+@media screen and (min-width: 900px) {
+  body {
+    width: 900px;
+  }
+
+  h2::before {
+    content: "## ";
+  }
+
+  h3::before {
+    content: "### ";
+  }
+
+  h4::before {
+    content: "#### ";
+  }
 }
 
 a {
@@ -94,6 +105,7 @@ footer {
 }
 
 .site-title {
+  color: #bfbfbf;
   display: block;
   font-size: 40px;
   letter-spacing: -0.01em;
@@ -143,7 +155,7 @@ footer {
 }
 
 .content {
-  margin-top: 2em;
+  margin-top: 1.5em;
 }
 
 /* Page Content styles */
@@ -163,7 +175,7 @@ footer {
 }
 
 .posts li {
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .posts a,
@@ -182,14 +194,10 @@ footer {
 }
 
 .posts .post-date {
+  display: block;
   font-style: italic;
   font-size: 18px;
   color: #999;
-}
-
-.posts .post-preview {
-  line-height: 1.6;
-  margin-top: 10px;
 }
 
 /* Post styles */
@@ -215,16 +223,6 @@ footer {
   line-height: 1.8;
   font-size: 18px;
   margin: 0 0 30px;
-}
-
-.post-content h1,
-.post-content h2,
-.post-content h3,
-.post-content h4,
-.post-content h5,
-.post-content h6 {
-  line-height: 1;
-  margin: 55px 0 20px;
 }
 
 .post-content blockquote {
