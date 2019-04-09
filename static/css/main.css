@@ -1,7 +1,5 @@
 /* Fonts */
-@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,600);
-@import url(https://fonts.googleapis.com/css?family=Merriweather:400,300);
-@import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:400);
+@import url(https://fonts.googleapis.com/css?family=PT+Mono);
 
 /* Base */
 /* ----------------------------------------------------------*/
@@ -17,35 +15,68 @@ html {
 }
 
 body {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'PT Mono', monospace;
   font-size: 16px;
   line-height: 1.5;
   font-weight: 300;
-  background-color: #fff;
+  background-color: #0c0c0c;
+  color: #bfbfbf;
   width: 90%;
   margin: auto;
-  padding-top: 3em;
+  padding-top: 1em;
   padding-bottom: 50px;
 }
 
 
-@media screen and (min-width: 64em) {
+@media screen and (min-width: 900px) {
   body {
-    width: 57em;
-    padding-top: 4em;
+    width: 900px;
   }
 }
 
-h1, h2, h3, h4, h5, h6 { font-size: 100%; font-weight: 400; }
-
-h2 {
-  font-size: 2em;
-  margin-bottom: 20px;
+strong::before,
+strong::after {
+  content: "*";
 }
 
-a         { color: #000; text-decoration: underline; }
-a:visited { color: #a9a9a9; }
-a:hover   { background: #ffe94e; }
+h1 {
+  font-weight: 400;
+}
+
+h2::before {
+  content: "## ";
+}
+
+h3::before {
+  content: "### ";
+}
+
+h4::before {
+  content: "#### ";
+}
+
+h2 {
+  font-size: 28px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+a {
+  color: #d6c547;
+  text-decoration: underline;
+}
+
+a:visited {
+  color: #888888;
+}
+
+a:hover {
+  color: #0c0c0c;
+  background: #d6c547;
+  text-decoration: none;
+}
 
 
 /* Layout Styles */
@@ -56,121 +87,64 @@ header {
 }
 
 footer {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 30px;
-    width: 100%;
-    color: #aaa;
+    color: #969696;
     font-size: 12px;
-    text-align: center;
-    margin-bottom: 1.2em;
+    margin-top: 4em;
+    margin-bottom: 1em;
 }
 
 .site-title {
   display: block;
-  width: 100%;
-  color: #333;
-  font-family: 'Source Sans Pro', sans-serif;
-  font-weight: 600;
-  font-size: 77.4px;
-  letter-spacing: -0.04em;
-  line-height: 0.8;
-  float: left;
-  position: relative;
-  z-index: 1;
+  font-size: 40px;
+  letter-spacing: -0.01em;
   text-decoration: none;
-  text-align: center;
-  margin-bottom: 20px;
 }
 
 .site-title:hover,
 .site-title:visited {
-  color: #333;
+  color: #bfbfbf;
   text-decoration: none;
-  background: #fff;
+  background: inherit;
 }
-
-@media screen and (max-width: 48em) {
-  .site-title,
-  .site-title:hover,
-  .site-title:visited {
-    font-size: 4em;
-  }
-}
-
-@media screen and (max-width: 35.5em) {
-  .site-title,
-  .site-title:hover,
-  .site-title:visited {
-    font-size: 3.2em;
-  }
-}
-
-@media screen and (min-width: 64em) {
-  .first-name {
-    font-size: 50px;
-  }
-
-  .site-title {
-    text-align: right;
-  }
-
-  .site-nav {
-    margin-right: 20px;
-  }
-}
-
 
 /* Contact styles */
 /* ----------------------------------------------------------*/
 .contact {
-  text-align: right;
   font-size: 1.1em;
 }
 
-.contact a:hover,
+.contact a,
 .contact a:visited {
-  color: #000;
+  color: #ff75bf;
+}
+
+.contact a:hover {
+  color: #0c0c0c;
+  background-color: #ff75bf;
+  text-decoration: none;
 }
 
 .contact ul {
   list-style: none;
 }
 
-@media screen and (max-width: 64em) {
-  .contact ul {
-    text-align: center;
-  }
-
-  .contact ul > li {
-    display: inline;
-  }
-
-  .contact ul > li::after {
-    content: "\2022";
-    font-size: 1em;
-    margin-left: 0.3em;
-    text-align: center;
-  }
-
-  .contact ul > li:last-child::after {
-    content: "";
-  }
+.contact ul > li {
+  display: inline;
 }
 
-@media screen and (max-width: 48em) {
-  .contact {
-    font-size: 1.0em;
-  }
+.contact ul > li::after {
+  content: "";
+  font-size: 1em;
+  margin-left: 0.4em;
 }
 
-@media screen and (max-width: 35.5em) {
-  .contact {
-    font-size: 0.9em;
-  }
+.contact ul > li:last-child::after {
+  content: "";
 }
 
+.content {
+  margin-top: 2em;
+}
 
 /* Page Content styles */
 /* ----------------------------------------------------------*/
@@ -184,23 +158,33 @@ footer {
 /* Home styles */
 /* ----------------------------------------------------------*/
 
-.posts { list-style-type: none; }
+.posts {
+  list-style-type: none;
+}
 
-.posts li { margin-bottom: 3em; }
+.posts li {
+  margin-bottom: 12px;
+}
+
+.posts a,
+.posts a:visited {
+  color: #d6c547;
+}
+
+.posts a:hover {
+  color: #0c0c0c;
+  background: #d6c547;
+  text-decoration: none;
+}
 
 .posts .post-link {
-  font-size: 36px;
-  line-height: 1.4;
-  color: #333;
-  padding: 3px 0;
+  font-size: 18px;
 }
 
 .posts .post-date {
   font-style: italic;
-  display: block;
-  font-size: 14px;
+  font-size: 18px;
   color: #999;
-  margin-bottom: 10px;
 }
 
 .posts .post-preview {
@@ -208,44 +192,23 @@ footer {
   margin-top: 10px;
 }
 
-@media screen and (max-width: 35.5em) {
-  .posts li {
-    margin-bottom: 2.4em;
-  }
-
-  .posts .post-link {
-    font-size: 28px;
-  }
-}
-
-
 /* Post styles */
 /* ----------------------------------------------------------*/
 
-.post-header { margin: 10px 0 30px; }
+.post-header {
+  margin: 10px 0 30px;
+}
 
 .post-header h1 {
-  font-size: 42px;
+  font-size: 32px;
   line-height: 1.2;
 }
 
 .post-header .meta {
   font-style: italic;
   font-size: 15px;
-  color: #818181;
+  color: #888888;
   margin-top: 5px;
-}
-
-@media screen and (max-width: 48em) {
-  .post-header h1 {
-    font-size: 34px;
-  }
-}
-
-@media screen and (max-width: 35.5em) {
-  .post-header h1 {
-    font-size: 28px;
-  }
 }
 
 .post-content {
@@ -264,25 +227,12 @@ footer {
   margin: 55px 0 20px;
 }
 
-.post-content h2 {
-  font-size: 32px;
-}
-
-.post-content h3 {
-  font-size: 26px;
-}
-
-.post-content h4 {
-  font-size: 20px;
-}
-
 .post-content blockquote {
-  border-left: 4px solid #e8e8e8;
+  border-left: 4px solid #bfbfbf;
   padding-left: 20px;
-  font-size: 18px;
-  opacity: .6;
   font-style: italic;
-  margin: 30px 0;
+  margin-left: 20px;
+  margin-right: 40px;
 }
 
 .post-content > * {
@@ -292,48 +242,27 @@ footer {
 .post pre {
   font-size: 16px;
   padding: 16px;
-  border-radius: 3px;
-  background-color: #f1f1f1;
-}
-
-.post p > code {
-  font-size: 18px;
-  padding: 3px 6px;
-}
-
-.post pre,
-.post code {
-  font-family: 'Source Code Pro', monospace;
+  border: 1px solid #bfbfbf;
+  border-radius: 2px;
   overflow-x: scroll;
 }
 
+.post pre > code {
+  color: #bd99d2;
+}
+
+.post p > code::before,
+.post p > code::after {
+  content: "`";
+}
+
 .post ul,
-.post ol { margin-left: 1.35em; }
-
-.post pre code { border: none; }
-
-/* terminal */
-.post pre.terminal {
-  border: 1px solid #000;
-  background-color: #333;
-  color: #FFF;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  border-radius: 3px;
+.post ol {
+  margin-left: 1.35em;
 }
 
-.post pre.terminal code { background-color: #333; }
-
-div.highlight,
-figure.highlight {
-  border-radius: 10px;
-}
-
-@media screen and (max-width: 35.5em) {
-  div.highlight,
-  figure.highlight {
-    border-radius: 6px;
-  }
+.post pre code {
+  border: none;
 }
 
 /* Syntax highlighting styles */
